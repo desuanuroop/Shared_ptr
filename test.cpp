@@ -5,17 +5,19 @@ using namespace cs540;
 class Foo {
 	public:
 //     Foo() { std::cout << "Foo...\n"; }
-//    ~Foo() { std::cout << "~Foo...\n"; }
+       virtual ~Foo() {}
 	int x;
 };
 class Derived:public Foo{
 	public:
+		virtual ~Derived(){}
 		int y;
 };
 int main(){
 	SharedPtr<Foo> sh;
 	Foo *f = new Foo();
-/*	SharedPtr<Foo> sh1(f);
+	SharedPtr<Foo> sh1(f);
+	sh1 = sh1;
 	assert(*sh1.ptr->ref_count == 1);
 	assert(sh1.ptr->Optr == f);
 	SharedPtr<Foo> sh2(sh1);
@@ -41,23 +43,22 @@ int main(){
 	assert(*sh2.ptr->ref_count == 1);
 
 	sh1 = std::move(sh2);
-
+	
 	sh1.reset();
 	Foo *f1 = new Foo();
 	sh1.reset(f1);
 	sh1.get()->x = 100;
 	int x = sh1.get()->x;
 	assert(x == 100);
-*/
+
 	{
-            //SharedPtr<Foo> sp2;
+            SharedPtr<Foo> sp2;
             {
                 SharedPtr<Derived> sp(new Derived);
                 // Test template copy constructor.
-                SharedPtr<Foo> sp3(std::move(sp));
-		//assert(sp3.ptr->ref_count == 2);
-                //sp2 = sp;
-                //sp2 = sp2;
+                SharedPtr<Foo> sp3(sp);
+                sp2 = sp;
+                sp2 = sp2;
             }
         }
 }
