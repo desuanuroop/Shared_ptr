@@ -54,7 +54,7 @@ int main(){
             {
                 SharedPtr<Derived> sp(new Derived);
                 // Test template copy constructor.
-                SharedPtr<Foo> sp3(std::move(sp));
+                SharedPtr<Foo> sp3(sp);
 		//assert(sp3.ptr->ref_count == 2);
                 //sp2 = sp;
                 //sp2 = sp2;
