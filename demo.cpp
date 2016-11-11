@@ -1,22 +1,25 @@
 #include<iostream>
+using namespace std;
+
 class Base{
 	public:
-	class b{
-		int a;
-	};
-	int x;
+	int *x;
+	Base(){
+		x = new int();
+	}
+	virtual ~Base(){cout<<"In Base destructor"<<endl;delete x;
+	}
 };
-class Derived: public Base{
+class Derived:public Base{
 	public:
-	class d{
-		int d;
-	};
-		int y;
+	int *y;
+	Derived(){
+		y = new int();
+	}
+        ~Derived(){cout<<"In Derived destructor"<<endl;delete y;}
 };
 int main(){
-	Base::b *b;
-	int *p;
-	p = new int(1);
-	(*p)++;
-	std::cout<<*p<<std::endl;
+	Base *b = new Derived();
+	Derived *d = dynamic_cast<Derived *>(b);
+	delete d;
 }

@@ -5,7 +5,7 @@ using namespace std;
 	class SharedPtr{
 		class ObjPtr{
 			public:
-			T *Optr;
+			T *Optr=NULL;
 			int *ref_count;
 		};
 		public:
@@ -25,13 +25,17 @@ using namespace std;
                 	}
 		}
 
+		void allocate(const SharedPtr &from){
+	                ptr = new ObjPtr();
+			ptr->Optr = from.ptr->Optr;
+			ptr->ref_count = from.ptr->ref_count;
+		}
+
 		//copy constructor
 		SharedPtr(const SharedPtr &p){//copy Constructor
 			if(p.ptr != NULL)
                         	(*p.ptr->ref_count)++;
-	                ptr = new ObjPtr();
-			ptr->Optr = p.ptr->Optr;
-			ptr->ref_count = p.ptr->ref_count;
+			allocate(p);
 		}
 
 		//copy constructor with Change of Type
@@ -47,9 +51,7 @@ using namespace std;
 		//Move reference
 		SharedPtr(SharedPtr &&p){
 //			cout<<"HI"<<endl;
-			ptr = new ObjPtr();
-			ptr->Optr = p.ptr->Optr;
-			ptr->ref_count = p.ptr->ref_count;
+			allocate(p);
 			delete p.ptr;
 			p.ptr = NULL;
 		}
@@ -57,9 +59,7 @@ using namespace std;
 		//Move reference with Change of Type
 		template<typename U>
 		SharedPtr(SharedPtr<U> &&p){
-			ptr = new ObjPtr();	
-			ptr->Optr = p.ptr->Optr;
-			ptr->ref_count = p.ptr->ref_count;
+			allocate(p);
 			delete p.ptr;
 			p.ptr = NULL;
 		}
@@ -76,9 +76,7 @@ using namespace std;
 					(*ptr->ref_count)--;
 			}
 			delete ptr; //Doubt it.
-			ptr = new ObjPtr();
-			ptr->Optr = from.ptr->Optr;
-			ptr->ref_count = from.ptr->ref_count;
+			allocate(from);
 			(*ptr->ref_count)++;
 			return *this;
 		}
@@ -86,7 +84,7 @@ using namespace std;
 		//Assignment operator with Change of Type
 		template<typename U>
 		SharedPtr &operator=(const SharedPtr<U> &from){
-			cout<<"HI 3"<<endl;
+//			cout<<"HI 3"<<endl;
 			if(ptr){
 				if(ptr->Optr == from.ptr->Optr)
 					return *this;
@@ -96,16 +94,14 @@ using namespace std;
 					(*ptr->ref_count)--;
 			}
 			delete ptr; //Doubt it.
-			ptr = new ObjPtr();
-			ptr->Optr = from.ptr->Optr;
-			ptr->ref_count = from.ptr->ref_count;
+			allocate(from);
 			(*ptr->ref_count)++;			
 			return *this;
 		}
 
 		//Assignment operator with Move
 		SharedPtr &operator=(SharedPtr &&p){
-			cout<<"HI 4"<<endl;
+//			cout<<"HI 4"<<endl;
 			if(ptr){
 				if(*ptr->ref_count == 1)
 					delet(ptr);
@@ -113,9 +109,7 @@ using namespace std;
 					(*ptr->ref_count)--;
 			}
 			delete ptr;
-			ptr = new ObjPtr();
-			ptr->Optr = p.ptr->Optr;
-			ptr->ref_count = p.ptr->ref_count;
+			allocate(p);
 			delete p.ptr;
 			p.ptr = NULL;
 			return *this;
@@ -131,9 +125,7 @@ using namespace std;
 					(*ptr->ref_count)--;
 			}
 			delete ptr;
-			ptr = new ObjPtr();
-			ptr->Optr = p.ptr->Optr;
-			ptr->ref_count = p.ptr->ref_count;
+			allocate(p);
 			delete p.ptr;
 			p.ptr = NULL;
 			return *this;
@@ -146,6 +138,19 @@ using namespace std;
 			return NULL;
 		}
 
+		T &operator*() const{
+			return *get();
+		}
+		T* operator->(){
+			if(ptr)
+				return ptr->Optr;
+			return NULL;
+		}
+
+		operator bool(){
+			if(ptr)
+				return 1;
+		}
 		//Delete if only one reference
 		void delet(SharedPtr<T>::ObjPtr *ptr){
 			if(!ptr)
@@ -176,4 +181,10 @@ using namespace std;
 			delet(ptr);
 		}
 	};
+
+	template<typename T1, typename T2>
+	bool operator==(const SharedPtr<T1> &s1, const SharedPtr<T2> &s2){
+		if(s1.ptr && s2.ptr)
+				return (s1.ptr->Optr == s2.ptr->Optr);
+	}
 }//End of namespace
