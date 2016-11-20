@@ -8,5 +8,5 @@ s:
 	g++ SharedPtr_test.cpp -g -std=c++11 -Wall -Wextra -pedantic
 	valgrind ./a.out
 d:
-	g++ demo.cpp -std=c++11
+	g++ -g demo.cpp -std=c++11
 	./a.out

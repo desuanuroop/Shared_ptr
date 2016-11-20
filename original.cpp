@@ -1,6 +1,6 @@
 #include <memory>
 #include <iostream>
- 
+#include <assert.h> 
 struct Foo {
     Foo() { std::cout << "Foo...\n"; }
     ~Foo() { std::cout << "~Foo...\n"; }
@@ -31,5 +31,6 @@ int main()
     {
         std::cout << "constructor with object and deleter\n";
         std::shared_ptr<Foo> sh4(new Foo, D());
+	assert(!(sh4 == NULL));
     }
 }

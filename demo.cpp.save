@@ -1,0 +1,29 @@
+#include<iostream>
+#include<typeinfo>
+using namespace std;
+
+class Base{
+	public:
+	int *x;
+	Base(){
+		x = new int();
+	}
+	~Base(){cout<<"In Base destructor"<<endl;delete x;
+	}
+};
+class Derived:public Base{
+	public:
+	int *y;
+	Derived(){
+		y = new int();
+	}
+        ~Derived(){cout<<"In Derived destructor"<<endl;delete y;}
+};
+int main(){
+	Base *b = new Derived();
+	decltype(*b) r = *b;
+	cout<<"type: "<<typeid(b).name()<<endl;
+	cout<<"type D: "<<typeid(*b).name()<<endl;
+	cout<<"type r: "<<typeid(r).name()<<endl;
+	cout<<"type *r: "<<typeid(*r).name()<<endl;
+}

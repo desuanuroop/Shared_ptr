@@ -1,12 +1,18 @@
 #include <iostream>
+#include <functional>
 namespace cs540{
 using namespace std;
+	template<typename T>
+	void deleter(void *p){
+		delete static_cast<T *>(p);
+	}
 	template<typename T>
 	class SharedPtr{
 		class ObjPtr{
 			public:
 			T *Optr=NULL;
 			int *ref_count;
+			std::function<void(void *)> del;
 		};
 		public:
 		ObjPtr *ptr = NULL; //Member
@@ -17,11 +23,12 @@ using namespace std;
 
 		//Construct a SharedPtr pointing to given object
 		template<typename U>
-		explicit SharedPtr(U *ptd){
+		explicit SharedPtr(U *ptd, std::function<void(void *)>d = &deleter<U>){
  	               if(ptr == NULL){
         	                ptr = new ObjPtr();
                 	        ptr->Optr = ptd;
                         	ptr->ref_count = new int(1);
+				ptr->del = d;
                 	}
 		}
 
@@ -29,6 +36,7 @@ using namespace std;
 	                ptr = new ObjPtr();
 			ptr->Optr = from.ptr->Optr;
 			ptr->ref_count = from.ptr->ref_count;
+			ptr->del = from.ptr->del;
 		}
 
 		//copy constructor
@@ -72,10 +80,12 @@ using namespace std;
 					return *this;
 				else if(*ptr->ref_count == 1)
 					delet(ptr);
-				else
+				else{
 					(*ptr->ref_count)--;
+					delete ptr;
+				}
 			}
-			delete ptr; //Doubt it.
+//			delete ptr; //Doubt it.
 			allocate(from);
 			(*ptr->ref_count)++;
 			return *this;
@@ -90,12 +100,14 @@ using namespace std;
 					return *this;
 				else if(*ptr->ref_count == 1)
 					delet(ptr);
-				else
+				else{
 					(*ptr->ref_count)--;
+					delete ptr;
+				}
 			}
-			delete ptr; //Doubt it.
+//			delete ptr; //Doubt it.
 			allocate(from);
-			(*ptr->ref_count)++;			
+			(*ptr->ref_count)++;
 			return *this;
 		}
 
@@ -105,10 +117,12 @@ using namespace std;
 			if(ptr){
 				if(*ptr->ref_count == 1)
 					delet(ptr);
-				else
+				else{
 					(*ptr->ref_count)--;
+					delete ptr;
+				}
 			}
-			delete ptr;
+//			delete ptr;
 			allocate(p);
 			delete p.ptr;
 			p.ptr = NULL;
@@ -121,10 +135,12 @@ using namespace std;
 			if(ptr){
 				if(*ptr->ref_count == 1)
 					delet(ptr);
-				else
+				else{
 					(*ptr->ref_count)--;
+					delete ptr;
+				}
 			}
-			delete ptr;
+//			delete ptr;
 			allocate(p);
 			delete p.ptr;
 			p.ptr = NULL;
@@ -149,14 +165,17 @@ using namespace std;
 
 		operator bool(){
 			if(ptr)
-				return 1;
+				return true;
+			return false;
 		}
 		//Delete if only one reference
 		void delet(SharedPtr<T>::ObjPtr *ptr){
 			if(!ptr)
 				return;
 			if((*ptr->ref_count) == 1){
-				delete ptr->Optr;
+//				decltype(ptr->Optr) r = ptr->Optr;
+				ptr->del(ptr->Optr);
+//				delete ptr->Optr;
 				delete ptr->ref_count;
 			}else
 				(*ptr->ref_count)--;
@@ -165,9 +184,9 @@ using namespace std;
 		//Reset
 		void reset(){
 			delet(ptr);
-			ptr = NULL; 
+			ptr = NULL;
 		}
-		
+
 		//Reset to another pointer
 		template<typename U>
 		void reset(U *p){
@@ -185,6 +204,28 @@ using namespace std;
 	template<typename T1, typename T2>
 	bool operator==(const SharedPtr<T1> &s1, const SharedPtr<T2> &s2){
 		if(s1.ptr && s2.ptr)
-				return (s1.ptr->Optr == s2.ptr->Optr);
+			return (s1.ptr->Optr == s2.ptr->Optr);
+		if(!s1.ptr && !s2.ptr)
+			return true;
+		return false;
+	}
+
+	template<typename T1>
+	bool operator==(const SharedPtr<T1> &s1, std::nullptr_t t){
+		return(s1.ptr->Optr == t);
+	}
+
+	template<typename T1>
+	bool operator==(std::nullptr_t t, const SharedPtr<T1> &s1){
+		return(s1.ptr->Optr == t);
+	}
+
+	template<typename T1, typename T2>
+	bool operator!=(const SharedPtr<T1> &s1, const SharedPtr<T2> &s2){
+		if(s1.ptr && s2.ptr)
+			return (s1.ptr->Optr != s2.ptr->Optr);
+		if((s1.ptr && !s2.ptr) || (!s1.ptr && s2.ptr))
+			return true;
+		return false;
 	}
 }//End of namespace
