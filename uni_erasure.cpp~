@@ -33,7 +33,7 @@ void func(const void* p){
 template<typename T>
 class B{
 	public:
-	T *pt;
+	const T *pt;
 //	void (*fun)(void);
 	std::function<void(const void *)> del;
 	template<typename U>

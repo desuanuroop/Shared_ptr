@@ -1,6 +1,5 @@
 #include "SharedPtr.hpp"
 #include <new>
-#include <memory>
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
