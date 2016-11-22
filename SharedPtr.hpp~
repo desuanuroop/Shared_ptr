@@ -33,10 +33,12 @@ using namespace std;
 		}
 
 		void allocate(const SharedPtr &from){
-	                ptr = new ObjPtr();
-			ptr->Optr = from.ptr->Optr;
-			ptr->ref_count = from.ptr->ref_count;
-			ptr->del = from.ptr->del;
+			if(from.ptr){
+			        ptr = new ObjPtr();
+				ptr->Optr = from.ptr->Optr;
+				ptr->ref_count = from.ptr->ref_count;
+				ptr->del = from.ptr->del;
+			}
 		}
 
 		//copy constructor
@@ -88,7 +90,8 @@ using namespace std;
 			}
 //			delete ptr; //Doubt it.
 			allocate(from);
-			(*ptr->ref_count)++;
+			if(ptr)
+				(*ptr->ref_count)++;
 			return *this;
 		}
 
