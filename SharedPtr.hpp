@@ -32,6 +32,33 @@ using namespace std;
                 	}
 		}
 
+		//cast constructors
+		template<typename U>
+		explicit SharedPtr(const SharedPtr<U> &sp, int){ //1 for static, 0 for dynamic.
+			//static
+				ptr = new ObjPtr();
+				ptr->Optr = static_cast<T*>(sp.ptr->Optr);
+				ptr->ref_count = sp.ptr->ref_count;
+				std::function<void(const void *)>d = &deleter<T>;
+				ptr->del = d;
+				(*ptr->ref_count)++;
+		}
+
+		//dyanmic cast constructor
+		template<typename U>
+		explicit SharedPtr(const SharedPtr<U> &sp, double ){
+			T* temp;
+			if((temp = dynamic_cast<T*>(sp.ptr->Optr))){
+				ptr = new ObjPtr();
+				ptr->Optr = temp;
+				ptr->ref_count = sp.ptr->ref_count;
+				std::function<void(const void *)>d = &deleter<T>;
+				ptr->del = d;
+				(*ptr->ref_count)++;
+			}else{
+				ptr = NULL;
+			}
+		}
 		void allocate(const SharedPtr &from){
 			if(from.ptr){
 			        ptr = new ObjPtr();
@@ -81,17 +108,21 @@ using namespace std;
 			if(ptr){
 				if(ptr == from.ptr)
 					return *this;
-				else if(*ptr->ref_count == 1)
+				else if(*ptr->ref_count == 1){
 					delet(ptr);
+					ptr=NULL;
+				}
 				else{
 					(*ptr->ref_count)--;
 					delete ptr;
+					ptr=NULL;
 				}
 			}
 //			delete ptr; //Doubt it.
 			allocate(from);
 			if(ptr)
-				(*ptr->ref_count)++;
+				if(ptr->ref_count)
+					(*ptr->ref_count)++;
 			return *this;
 		}
 
@@ -102,16 +133,21 @@ using namespace std;
 			if(ptr){
 				if(ptr->Optr == from.ptr->Optr)
 					return *this;
-				else if(*ptr->ref_count == 1)
+				else if(*ptr->ref_count == 1){
 					delet(ptr);
+					ptr=NULL;
+				}
 				else{
 					(*ptr->ref_count)--;
 					delete ptr;
+					ptr=NULL;
 				}
 			}
 //			delete ptr; //Doubt it.
 			allocate(from);
-			(*ptr->ref_count)++;
+			if(ptr)
+				if(ptr->ref_count)
+					(*ptr->ref_count)++;
 			return *this;
 		}
 
@@ -119,11 +155,14 @@ using namespace std;
 		SharedPtr &operator=(SharedPtr &&p){
 //			cout<<"HI 4"<<endl;
 			if(ptr){
-				if(*ptr->ref_count == 1)
+				if(*ptr->ref_count == 1){
 					delet(ptr);
+					ptr=NULL;
+				}
 				else{
 					(*ptr->ref_count)--;
 					delete ptr;
+					ptr=NULL;
 				}
 			}
 //			delete ptr;
@@ -137,11 +176,14 @@ using namespace std;
 		template<typename U>
 		SharedPtr &operator=(SharedPtr<U> &&p){
 			if(ptr){
-				if(*ptr->ref_count == 1)
+				if(*ptr->ref_count == 1){
 					delet(ptr);
+					ptr=NULL;
+				}
 				else{
 					(*ptr->ref_count)--;
 					delete ptr;
+					ptr=NULL;
 				}
 			}
 //			delete ptr;
@@ -176,14 +218,18 @@ using namespace std;
 		void delet(SharedPtr<T>::ObjPtr *ptr){
 			if(!ptr)
 				return;
+			if(!ptr->ref_count)
+				return;
 			if((*ptr->ref_count) == 1){
 //				decltype(ptr->Optr) r = ptr->Optr;
 				ptr->del(ptr->Optr);
 //				delete ptr->Optr;
 				delete ptr->ref_count;
+				ptr->ref_count = NULL;
 			}else
 				(*ptr->ref_count)--;
 			delete ptr;
+			ptr=NULL;
 		}
 		//Reset
 		void reset(){
@@ -204,6 +250,8 @@ using namespace std;
 		~SharedPtr(){
 			delet(ptr);
 		}
+
+		//cast
 	};
 
 	template<typename T1, typename T2>
@@ -232,5 +280,13 @@ using namespace std;
 		if((s1.ptr && !s2.ptr) || (!s1.ptr && s2.ptr))
 			return true;
 		return false;
+	}
+	template<typename T, typename U>
+	SharedPtr<T> static_pointer_cast(const SharedPtr<U> &sp){
+		return SharedPtr<T>(sp, 1);
+	}
+	template<typename T, typename U>
+	SharedPtr<T> dynamic_pointer_cast(const SharedPtr<U> &sp){
+		return SharedPtr<T>(sp, 1.1);
 	}
 }//End of namespace

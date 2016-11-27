@@ -19,7 +19,7 @@
 #include <random>
 #include <errno.h>
 #include <assert.h>
-
+#include <memory>
 
 
 using namespace std;
@@ -100,7 +100,7 @@ main(int argc, char *argv[]) {
 
     basic_tests_1();
     basic_tests_2();
-//    threaded_test();
+    threaded_test();
 }
 
 void *operator new(size_t sz) {
@@ -278,7 +278,7 @@ void basic_tests_1() {
                 SharedPtr<Base1> sp2(sp);
             }
         }
-        // Base1 assigned from SharedPtr<Derived>.
+      // Base1 assigned from SharedPtr<Derived>.
         {
             SharedPtr<Base1> sp2;
             {
@@ -403,15 +403,16 @@ void basic_tests_1() {
         sp3.reset(new Derived);
         assert(!(sp2 == sp3));
     }
-/*
+
     // Test static_pointer_cast.
     {
         SharedPtr<Derived> sp(new Derived);
         SharedPtr<Base1> sp2(sp);
 
-        // SharedPtr<Derived> sp3(sp2); // Should give a syntax error.
+        //SharedPtr<Derived> sp3(sp2); // Should give a syntax error.
         SharedPtr<Derived> sp3(static_pointer_cast<Derived>(sp2));
-        // SharedPtr<Derived> sp4(dynamic_pointer_cast<Derived>(sp2)); // Should give syntax error about polymorphism.
+	assert(sp == sp3);
+        //SharedPtr<Derived> sp4(dynamic_pointer_cast<Derived>(sp2)); // Should give syntax error about polymorphism.
     }
 
     // Test dynamic_pointer_cast.
@@ -425,7 +426,7 @@ void basic_tests_1() {
         SharedPtr<Derived2_polymorphic> sp5(dynamic_pointer_cast<Derived2_polymorphic>(sp2));
         assert(!sp5);
     }
-
+/*
     // Test to make sure works with MI.
     {
         SharedPtr<Base2> sp2;
