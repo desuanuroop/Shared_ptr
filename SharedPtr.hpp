@@ -65,7 +65,8 @@ using namespace std;
 				ptr->Optr = from.ptr->Optr;
 				ptr->ref_count = from.ptr->ref_count;
 				ptr->del = from.ptr->del;
-			}
+			}else
+				ptr = NULL;
 		}
 
 		//copy constructor
@@ -153,7 +154,7 @@ using namespace std;
 
 		//Assignment operator with Move
 		SharedPtr &operator=(SharedPtr &&p){
-//			cout<<"HI 4"<<endl;
+			cout<<"HI 4"<<endl;
 			if(ptr){
 				if(*ptr->ref_count == 1){
 					delet(ptr);
